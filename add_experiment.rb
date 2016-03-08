@@ -3,7 +3,7 @@
 require 'rest-client'
 require 'json'
 #if you are using a private cloud / local install you will need to use a different url. 
-#base = "https://api.labguru.com"
+base = "https://api.labguru.com"
 
 #1. Get a token
 url = base + "/api/v1/sessions.json"
