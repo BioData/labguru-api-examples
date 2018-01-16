@@ -98,7 +98,6 @@ else
   #send us this file if things do not work as expected
   @log = File.new("links_#{Time.now.to_i}.log","w")
   @token = get_token( ARGV[0],ARGV[1])
-  write_log("Got Token #{@token}")
   if @token == "-1"
     write_log "could not autenticate user"
   else
