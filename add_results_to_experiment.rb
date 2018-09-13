@@ -65,9 +65,9 @@ element = add_element_to_section(results,"text","result text goes here")
 url = @base + "/api/v1/attachments.json"
 params = {
   item: {
-   title: "Sequencing Results",
-   description: "As recieved from IDT",
-   attachment: File.open("/Users/admin/code/labguru/labguru-api-examples/support/sdm_sites.gif","r"),
+   title: "IMG_0365",
+   description: "Our experiment result",
+   attachment: File.open("/Users/admin/Desktop/IMG_0365.jpg","r"),
    attach_to_uuid: experiment["uuid"]
   },
   token: @token
