@@ -8,7 +8,6 @@ require 'json'
 #4. Add an text element to the results section 
 #5. Upload and attach an image to this experiment
 #6. Embed the image inside the result element 
-#7. Save the element
 
 #1. Get a token 
 @base = "https://api.labguru.com"
@@ -72,16 +71,14 @@ params = {
   },
   token: @token
 }
-response =  JSON.parse(RestClient.post(url,params))
-
-image_url = response["annotated_url"].split("?").first
+attachment =  JSON.parse(RestClient.post(url,params))
 
 #6. Add image to results 
-element["data"] << "<img src='#{image_url}'/>"
-#7. Save element
-def save_element(element)
-  url = @base + "/api/v1/elements/#{element["id"]}.json"
-  response = JSON.parse(RestClient.put(url,{token: @token, item: element}))
+def add_attachment_to_results_section(attachment, results)
+  attachments_elemnt = add_element_to_section(results,"attachments",attachment.to_s)
+  url = @base + "/api/v1/attachments/#{attachment["id"]}.json"
+  params = {token: token, item: {element_id: attachments_elemnt["id"]}}
+  response =  JSON.parse(RestClient.put(url,params))
 end
 
-save_element(element)
+
