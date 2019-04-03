@@ -56,6 +56,8 @@ CSV.foreach("samples.csv") do |sample|
   if stock
     found = ensure_stock_is_in_sample_list(sample_list,stock["id"])
     verification.puts("#{sample},#{found ? :'Veified': 'NOT-VERIFIED'}")
+  else
+    verification.puts("#{sample},'NOT FOUND'")
   end
 end
 
