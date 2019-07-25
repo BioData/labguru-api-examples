@@ -4,10 +4,14 @@ require 'net/http'
 require 'openssl'
 require 'json'
 require 'csv'
+require 'rubygems'
+require 'rest-client'
+@token = ENV['token']
+@base = "https://my.labguru.com/api/v1/"
 def get_remote_data(endpoint,exclude_fields='sequences,tags,member')
-  token = ENV['token']
+
   puts "getting remote data from "
-  url = URI("https://my.labguru.com/api/v1/#{endpoint}.json?token=#{token}&exclude_fields=#{exclude_fields}&meta=true&page_size=10")
+  url = URI("#{@base}#{endpoint}.json?token=#{@token}&exclude_fields=#{exclude_fields}&meta=true&page_size=10")
   puts url
   http = Net::HTTP.new(url.host, url.port)
   http.use_ssl = true
@@ -70,7 +74,7 @@ def merge(patients,samples, rna_samples,protein_samples)
   end
   rna_by_sample_uuid = {}
   rna_samples.each do |sample|
-    rna_by_sample_uuid[sample[:links][0]] = sample
+    rna_by_sample_uuid[sample[:links][0]] = sample if sample[:links].length > 0
   end
 
   protein_by_sample_uuid = {}
@@ -115,14 +119,42 @@ puts protein_samples.length
 
 #transform
 data =  merge(patients,samples,rna_samples,protein_samples)
-CSV.open('merged.csv', "wb") do |csv|
+CSV.open('etl.csv', "wb") do |csv|
   csv << ['Patient Id', 'Name', 'Auto Name', 'Sex', 'Age', 'Diagnosis', 'Stage', 'TNM','Diabetes Status', 'Sample Type', 'Collection Tube', 'Timepoint', 'Date Sampled', 'Isolated','RNA_ID','RNA_NAME','PROTEIN_ID','PROTEIN_NAME']
   data.each do |row|
     csv << row
   end
 end
 
+def upload_file(filepath, title, description)
+  url = @base + "attachments.json"
+  params = {
+    item: {
+     title: title,
+     description: description,
+     attachment: File.open(filepath,"r")
+    },
+    token: @token
+  }
+  attachment =  JSON.parse(RestClient.post(url,params))
+end
+
+def create_dataset(attachment_id, name, description)
+  url = @base + "datasets.json"
+  params = {
+    "item": {
+      "name": name,
+      "description": description,
+      "data_attachment_id": attachment_id
+    },
+    "token": @token
+  }
+  attachment =  JSON.parse(RestClient.post(url,params))
+end
+
 #load - to dataset
+attachment = upload_file("etl.csv","ETL", "Patients Etl")
+create_dataset(attachment["id"],"ETL Dataset", "")
 
 
 #get the patient samples
