@@ -53,6 +53,7 @@ upload_attachment_to_equipment(equipment, {path: "/Users/liron/My\ Documents/sgs
 # if needed to go through a whole folder do this:
 # go through all files in a folder:
 folder_path = "/Users/liron/My\ Documents/sgs/"
+
 attachment_args = {path: "#{folder_path}/mchammer.png", title: "mchammer"}
 upload_attachment_to_equipment(equipment, attachment_args)
 
