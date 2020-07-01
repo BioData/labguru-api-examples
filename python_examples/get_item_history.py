@@ -2,10 +2,10 @@ from requests_toolbelt import MultipartEncoder
 import requests
 import json
 
-base =  'https://my.labguru.com'
+base =  'https://my.labguru.com/api/v1/'
 
 # Get a token:
-url = base + '/api/v1/sessions.json'
+url = base + 'sessions.json'
 params = {'login': EMAIL, 'password': PASSWORD}
 r = requests.post(url, params)
 js =  json.loads(r.text)
