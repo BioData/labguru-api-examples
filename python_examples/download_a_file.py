@@ -15,7 +15,7 @@ token = resp.json()['token']
 print token
 
 # 2. Get the attachment details
-attachment_url = base + "/attachments/"+ str(ATTACHMENT_ID) +".json?token=" + token
+attachment_url = base + "attachments/"+ str(ATTACHMENT_ID) +".json?token=" + token
 response = requests.get(attachment_url)
 attachment = json.loads(response.text)
 
