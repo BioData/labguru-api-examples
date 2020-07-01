@@ -21,8 +21,9 @@ attachment = json.loads(response.text)
 
 # 3. Use the attachment details to know the file name
 file_name = attachment["attachment_file_name"]
+file_location = "/Users/liron/Downloads/" + file_name
 
 # 4. Perform a get request to attachment download and pour the answer into a temp file
 download_url = base + "attachments/" + str(ATTACHMENT_ID) +  "/download.json?token=" + token
 response = requests.get(download_url, allow_redirects=True)
-open(file_name, 'wb').write(response.content)
+open(file_location, 'wb').write(response.content)
