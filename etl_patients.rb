@@ -11,7 +11,7 @@ require 'rest-client'
 def get_remote_data(endpoint,exclude_fields='sequences,tags,member')
 
   puts "getting remote data from "
-  url = URI("#{@base}#{endpoint}.json?token=#{@token}&exclude_fields=#{exclude_fields}&meta=true&page_size=10")
+  url = URI("#{@base}#{endpoint}.json?token=#{@token}&exclude_fields=#{exclude_fields}&meta=true&page_size=20")
   puts url
   http = Net::HTTP.new(url.host, url.port)
   http.use_ssl = true
@@ -93,6 +93,7 @@ def merge(patients,samples, rna_samples,protein_samples)
         data << sample[:Timepoint]
         data << sample[:"Date Sampled"]
         data << sample[:Isolated?]
+        data << sample[:Processed?]
         if (rna = rna_by_sample_uuid[sample[:uuid]])
           data << rna[:id]
           data << rna[:name]
@@ -107,22 +108,30 @@ def merge(patients,samples, rna_samples,protein_samples)
   end
   patients_data
 end
-#extract
-patients = get_data('biocollections/patients')
-puts patients.length
-samples = get_data('biocollections/patient%20samples')
-puts samples.length
-rna_samples = get_data('biocollections/rna%20samples')
-puts rna_samples.length
-protein_samples = get_data('biocollections/protein%20samples')
-puts protein_samples.length
 
-#transform
-data =  merge(patients,samples,rna_samples,protein_samples)
-CSV.open('etl.csv', "wb") do |csv|
-  csv << ['Patient Id', 'Name', 'Auto Name', 'Sex', 'Age', 'Diagnosis', 'Stage', 'TNM','Diabetes Status', 'Sample Type', 'Collection Tube', 'Timepoint', 'Date Sampled', 'Isolated','RNA_ID','RNA_NAME','PROTEIN_ID','PROTEIN_NAME']
-  data.each do |row|
-    csv << row
+def get_remote_samples(collection_id)
+  url = "#{@base}/samples.json?token=#{@token}&exclude_fields=item,links,stocks,container,item,url&page_size=10&filter={\"generic_collection_id\":#{collection_id}}&meta=true "
+  json = RestClient.get(url)
+  json = JSON.parse(json)
+  data = [json["data"]]
+  if json["meta"]["item_count"] > 10
+    (2..json["meta"]['page_count']).each do |page|
+      puts url
+      json = RestClient.get("#{url}&page=#{page}")
+      json = JSON.parse(json)
+      data << json["data"]
+    end
+  end
+  data
+end
+
+def get_samples(collection_id)
+  endpoint = 'experiment_samples'
+  if File.exists?(file_name(endpoint))
+    data = read_local_file(endpoint)
+  else
+    data = get_remote_samples(collection_id).flatten
+    save_local_file(endpoint,data)
   end
 end
 
@@ -152,9 +161,45 @@ def create_dataset(attachment_id, name, description)
   attachment =  JSON.parse(RestClient.post(url,params))
 end
 
+def save_to_file(data)
+  CSV.open('etl.csv', "wb") do |csv|
+    csv << ['Patient Id', 'Patient', 'Auto Name', 'Sex', 'Age', 'Diagnosis', 'Stage', 'TNM','Diabetes Status', 'Sample Type', 'Collection Tube', 'Timepoint', 'Date Sampled', 'Isolated','Processed','RNA_ID','RNA_NAME','PROTEIN_ID','PROTEIN_NAME']
+    data.each do |row|
+      csv << row
+    end
+  end
+end
+def get_experiment_from_samples(samples)
+  procedures = []
+  samples.each do |sample|
+    if sample[:container][:url].include?("knowledge/protocols")
+    else
+      procedures << sample[:container][:url].split("procedure_id=").last
+    end
+  end
+  puts procedures.uniq
+  
+end
+#extract
+patients = get_data('biocollections/patients')
+puts patients.length
+samples = get_data('biocollections/patient%20samples')
+puts samples.length
+rna_samples = get_data('biocollections/rna%20samples')
+puts rna_samples.length
+protein_samples = get_data('biocollections/protein%20samples')
+puts protein_samples.length
+sample_elements = get_samples(54)
+puts sample_elements.length
+get_experiment_from_samples(sample_elements)
+#transform
+#data =  merge(patients,samples,rna_samples,protein_samples)
+#save_to_file (data)
+
+
 #load - to dataset
-attachment = upload_file("etl.csv","ETL", "Patients Etl")
-create_dataset(attachment["id"],"ETL Dataset", "")
+#attachment = upload_file("etl.csv","ETL", "Patients Etl")
+#create_dataset(attachment["id"],"ETL Dataset 3", "")
 
 
 #get the patient samples
