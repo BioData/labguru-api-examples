@@ -1,5 +1,6 @@
 #add_attachments_section
 require 'rest-client'
+require 'json'
 base = "https://my.labguru.com/api/v1"
 
 #1. get a token
