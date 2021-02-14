@@ -4,7 +4,7 @@ import json
 token = raw_input("Enter token:") or os.environ.get('LABGURU_TOKEN')
 server_base = raw_input("Enter sever base (eg: https://my.labguru.com/ no API section needed") or "http://localhost:3000"
 url = server_base  + "/api/v1/elements?token=" + token
-container_id = raw_input("Enter Container ID") or 1624
+container_id = raw_input("Enter Container ID") or 196
 print "Creating a plate element"
 item_data = { "item":{
 	 "name":"Imported Plate",
@@ -20,6 +20,7 @@ print item_data
 x = requests.post(url, json = item_data)
 plate_json =  x.json()
 plate_id = plate_json["id"]
+print(plate_json)
 print(plate_id)
 filepath = raw_input("Enter path to the excel file to import") or "labguru_plate_import_template.xlsx"
 
@@ -27,9 +28,9 @@ filepath = raw_input("Enter path to the excel file to import") or "labguru_plate
 url = server_base + "/api/v1/elements/convert_xlsx_to_json?token=" + token
 print(url)
 f = open(filepath, "rb")
-response = requests.post(url, files= {"file_name[0]": f})
+response = requests.post(url, files= {"file_name[0]": f, "exp_pro_container_id": container_id})
 
-#update plate data with the response 
+#update plate data with the response
 plate_data = response.json()
 plate_json["data"] = json.dumps(plate_data["data"])
 item_data = {"element": plate_json}
