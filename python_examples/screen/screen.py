@@ -32,31 +32,34 @@ sample_element = lg.add_sample_element(section_id,cell_ids,"Biocollection::CellL
 #3. add cells to this plate
 plate_json    = lg.add_layer_data_to_plate(plate_id,'data/plate_default_cells.csv')
 
-#4. add meta data layer to the plate - declare controls and borders ;
+# #4. add meta data layer to the plate - declare controls and borders ;
 plate_json    = lg.add_layer_data_to_plate(plate_id,'data/plate_default_meta.csv')
+plate_json    = lg.add_layer_data_to_plate(plate_id,'data/plate_clear_wells.csv')
 
+#
 #5. utility - get plate json from xlsx
-xlsx_file    = lg.download_plate_xlsx(plate_id)
-plate_data   = lg.convert_plate_xls_to_json(xlsx_file,section_id)
-
-#6. create another empty plate and populate it with plate data
-plate_json    = lg.add_empty_plate(experiment_id,section_id,24,16,"Base Replica Plate")
-new_plate_id  = plate_json["id"]
-plate_json["data"] = plate_data
-plate_data    = lg.update_plate(new_plate_id,plate_json)
-
-#7. Replicate Base plates
-names         = ["Replica A", "Replica B"]
-replicates    = lg.clone_plate(plate_id,names)
-
-#8. Createa a filter to display only plates related to this experiment
-#search = add_search()
-#9. Add this filter to the experiment page
-
-#10. Per plate attach an image
-
-#11. Per image - run an image analysis workflow
-
-#12. Add data per well
-
-#13. Add plate datasets
+# filename     = "data/screen.xlsx"
+# xlsx_file    = lg.download_plate_xlsx(plate_id, filename)
+# plate_data   = lg.convert_plate_xls_to_json(filename,section_id)
+# #
+# # #6. create another empty plate and populate it with plate data
+# plate_json    = lg.add_empty_plate(experiment_id,section_id,24,16,"Base Replica Plate")
+# new_plate_id  = plate_json["id"]
+# plate_json["data"] = plate_data
+# plate_data    = lg.update_plate(new_plate_id,plate_json)
+# #
+# # #7. Replicate Base plates
+# names         = ["Replica A", "Replica B"]
+# replicates    = lg.clone_plate(plate_id,names)
+# #
+# # #8. Createa a filter to display only plates related to this experiment
+# # #search = add_search()
+# # #9. Add this filter to the experiment page
+# #
+# # #10. Per plate attach an image
+# #
+# # #11. Per image - run an image analysis workflow
+# #
+# # #12. Add data per well
+# #
+# # #13. Add plate datasets

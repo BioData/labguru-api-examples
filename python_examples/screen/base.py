@@ -66,17 +66,26 @@ def convert_plate_xls_to_json(xlsx_filepath,container_id):
   print(response)
   plate_data = response.json()
   plate_json = json.dumps(plate_data["data"])
+  file = open("data/json.txt","w")
+  file.write(plate_json)
+  file.close
   return plate_json
 
 def update_plate(plate_id,plate_data):
-  url = BASE_URL + "/elements/" + str(plate_id)
+  url = BASE_URL + "/elements/" + str(plate_id) + "?token=" + TOKEN
   print(url)
+  plate_data = {"element": plate_data}
   response = requests.put(url, json=plate_data)
   return response.json()
 
-def download_plate_xlsx(plate_id):
-  url = BASE_URL + "/elements/" + str(plate_id) + "/download_plate_xlsx.json?token=" + TOKEN
+def download_plate_xlsx(plate_id,filename):
+  url = BASE_URL + "/elements/" + str(plate_id) + "/export_plate_to_xlsx_file.json?token=" + TOKEN
+  print(url)
   response = requests.get(url)
+  print(filename)
+  file = open(filename, "wb")
+  file.write(response.content)
+  file.close()
 
 def clone_plate(plate_id,names):
   url = BASE_URL + "/plates/" + str(plate_id) + "/duplicate?token=" + TOKEN
