@@ -1,8 +1,8 @@
 require 'csv'
 require 'rest-client'
 require 'json'
-EMAIL = "jonathan.gross@biodata.com"
-PASSWORD = "Jwk7PQtzJy"
+EMAIL = "*****"
+PASSWORD = "*******"
 #if you are using a private cloud / local install you will need to use a different url.
 @base = "https://my.labguru.com"
 
