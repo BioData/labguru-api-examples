@@ -66,6 +66,28 @@ upload_id = json["upload_id"]
 attachment_id = json["id"]
 
 
+# Print iterations progress
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = printEnd)
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
+
 def split_file(file_path, num_parts):
     filesize = os.path.getsize(file_path)
     chunk_size = filesize // num_parts
@@ -77,15 +99,18 @@ def split_file(file_path, num_parts):
 
 def upload_parts(file_path, presigned_urls):
     parts = list(split_file(file_path, len(presigned_urls)))
+    part_num = 0
     etags = []
-
+    printProgressBar(part_num, len(parts), prefix = "Upload:", suffix = "complete")
     for url, part in zip(presigned_urls, parts):
+        part_num += 1
         res = requests.put(url, data=part)
         if res.status_code != 200:
             raise Exception(
                 f"Upload failed for part: {part}, status code: {res.status_code}"
             )
         etags.append(res.headers["ETag"])
+        printProgressBar(part_num, len(parts), prefix = "Upload:", suffix = "complete")
 
     return etags
 
