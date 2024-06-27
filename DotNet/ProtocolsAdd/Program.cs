@@ -37,8 +37,8 @@ namespace LabguruAPIExample
 
     class Program
     {
-        private static readonly string apiKey = "355fa73336bdc8597aef4dd686303e8861d5d858";
-        private static readonly string apiUrl = "http://localhost:3000/api/v1";
+        private static readonly string apiKey = "YOUR_API_KEY_HERE";
+        private static readonly string apiUrl = "YOUR_API_URL_HERE";
 
         static async Task Main(string[] args)
         {
