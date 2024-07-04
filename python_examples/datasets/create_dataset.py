@@ -52,17 +52,3 @@ dataset_response = requests.post(
 dataset_response_data = dataset_response.json()
 
 print(dataset_response_data)
-
-# # Set up the headers, including the authorization token
-# headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-
-# # Make the POST request to the Labguru API
-# response = requests.post(api_endpoint, headers=headers, data=json_payload)
-
-# # Check if the request was successful
-# if response.status_code == 200:
-#     print("Dataset successfully posted to Labguru.")
-# else:
-#     print(
-#         f"Failed to post dataset. Status code: {response.status_code}, Message: {response.text}"
-#     )
