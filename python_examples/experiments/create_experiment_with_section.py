@@ -2,6 +2,7 @@ import requests
 import os
 import json
 
+#
 # Get the token and server base from the user or environment variables
 token = input("Enter token: ") or os.environ.get('LABGURU_TOKEN')
 server_base = input("Enter server base (e.g., https://my.labguru.com/): ") or "http://localhost:3000"
