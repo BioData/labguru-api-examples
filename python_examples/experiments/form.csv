@@ -1,0 +1,5 @@
+field_name,type,min,max,hint,row
+ph,number,0,14,ph,1
+ph_remarks,text,null,null,ph remarks,1
+temp,number,-100,200,temp,2
+temp_remarks,text,null,null,temp remarks,2
