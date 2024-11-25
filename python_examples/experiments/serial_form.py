@@ -4,8 +4,8 @@ import requests
 from typing import List, Dict, Any
 
 # Constants for the API key and URL (replace with your actual values)
-API_KEY = "YOUR_API_KEY_HERE"
-API_URL = "YOUR_API_URL_HERE"
+API_KEY = "TOKEN"
+API_URL = "https://my.labguru.com/api/v1"
 
 
 class CsvRecord:
@@ -38,30 +38,43 @@ def read_csv_file(file_path: str) -> List[CsvRecord]:
     return records
 
 
-def generate_html_table(records: List[CsvRecord]) -> str:
-    html = ["<table style='width: 100%;'><tbody>"]
-    grouped_records = {}
+def generate_html_table(records: List[CsvRecord], num_rows: int = 5) -> str:
+    # Initialize the HTML table
+    html = ["<table style='width: 100%; border-collapse: collapse;' border='1'>"]
 
-    for record in records:
-        grouped_records.setdefault(record.row, []).append(record)
+    # Group records by fields
+    fields = sorted(
+        {record.field_name for record in records}
+    )  # Ensure consistent order
 
-    html.append("<tr>")
-    for row_group in grouped_records.values():
-        html.append(f"<td>'{record.field_name}' </td>")
-    html.append("</tr>")
-    html.append("<tr>")
-    for row_group in grouped_records.values():
-        for record in row_group:
-            html.append(f"<td style='width: 25.0000%;'>{record.hint}</td>")
-            html.append(
-                f"<td style='width: 25.0000%;'><input disabled='' class='form-control' name='{record.field_name}' "
-                f"title='Cannot add values to fields in protocols. To add values, start an experiment from the protocol' "
-                f"type='{record.type}' placeholder='{record.field_name}' "
-                f"{f'min=\"{record.min}\"' if record.type == 'number' and record.min else ''} "
-                f"{f'max=\"{record.max}\"' if record.type == 'number' and record.max else ''}></td>"
-            )
-    html.append("</tr>")
-    html.append("</tbody></table><p><br></p>")
+    # Add header row
+    html.append("<thead><tr>")
+    for field in fields:
+        html.append(f"<th style='padding: 8px; text-align: left;'>{field}</th>")
+    html.append("</tr></thead>")
+
+    # Start the body
+    html.append("<tbody>")
+
+    # Generate body rows
+    for _ in range(num_rows):
+        html.append("<tr>")
+        for field in fields:
+            # Find the record for the field
+            record = next((r for r in records if r.field_name == field), None)
+            if record:
+                html.append(
+                    f"<td style='padding: 8px;'>"
+                    f"<input disabled='disabled' class='form-control no_reason' name='{record.field_name}' "
+                    f"title='Cannot add values to fields in protocols. To add values, start an experiment from the protocol' "
+                    f"type='{record.type}' placeholder='{record.hint}' "
+                    f"{f'min=\"{record.min}\"' if record.type == 'number' and record.min else ''} "
+                    f"{f'max=\"{record.max}\"' if record.type == 'number' and record.max else ''} value=''></td>"
+                )
+        html.append("</tr>")
+
+    # Close the body
+    html.append("</tbody></table>")
     return "".join(html)
 
 
@@ -87,9 +100,12 @@ def generate_form_json(records: List[CsvRecord]) -> str:
 
 
 def add_protocol(protocol: Dict[str, Any]) -> str:
+    print("Adding protocol...")
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = requests.post(f"{API_URL}/protocols", headers=headers, json=protocol)
-    if response.status_code == 200:
+    response = requests.post(
+        f"{API_URL}/protocols?token={API_KEY}", headers=headers, json=protocol
+    )
+    if response.status_code == 201:
         print("Protocol added successfully.")
         return response.json().get("id", "")
     else:
@@ -98,9 +114,9 @@ def add_protocol(protocol: Dict[str, Any]) -> str:
 
 
 def add_procedure(procedure: Dict[str, Any], protocol_id: str) -> str:
-    headers = {"Authorization": f"Bearer {API_KEY}"}
-    response = requests.post(f"{API_URL}/sections", headers=headers, json=procedure)
-    if response.status_code == 200:
+    print("Adding procedure...")
+    response = requests.post(f"{API_URL}/sections?token={API_KEY}", json=procedure)
+    if response.status_code == 201:
         print("Procedure added successfully.")
         return response.json().get("id", "")
     else:
@@ -109,7 +125,6 @@ def add_procedure(procedure: Dict[str, Any], protocol_id: str) -> str:
 
 
 def add_form_element(section_id: str, html_table: str, form_json: str):
-    headers = {"Authorization": f"Bearer {API_KEY}"}
     form_element = {
         "item": {
             "name": "Sample Manager",
@@ -122,8 +137,8 @@ def add_form_element(section_id: str, html_table: str, form_json: str):
             "is_valid": False,
         }
     }
-    response = requests.post(f"{API_URL}/elements", headers=headers, json=form_element)
-    if response.status_code == 200:
+    response = requests.post(f"{API_URL}/elements?token={API_KEY}", json=form_element)
+    if response.status_code == 201:
         print("Form element added successfully.")
     else:
         print(f"Error: {response.status_code}, Details: {response.text}")
