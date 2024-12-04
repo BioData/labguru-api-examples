@@ -1,0 +1,6 @@
+field_name,type,min,max,hint,row, readonly , display
+sample_id,hidden,null,null,null, 1, true, true 
+ph,number,0,14,ph,1, false , false 
+ph_remarks,text,null,null,ph remarks,1, false , false 
+temp,number,-100,200,temp,1, false , false 
+temp_remarks,text,null,null,temp remarks,1, false ,false 
