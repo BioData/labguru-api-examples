@@ -53,7 +53,7 @@ def read_samples_file(file_path: str) -> List[Dict[str, str]]:
 
 
 def generate_html_table(structure: List[CsvRecord], samples: List[Dict[str, str]]) -> str:
-    """Generates an HTML table based on the structure and samples."""
+    """Generates an HTML table based on the structure and samples with incremented field names."""
     html = ["<table style='width: 100%; border-collapse: collapse;' border='1'>"]
 
     # Add table header
@@ -67,16 +67,18 @@ def generate_html_table(structure: List[CsvRecord], samples: List[Dict[str, str]
     html.append("<tbody>")
 
     # Add a row for each sample
-    for sample in samples:
+    for idx, sample in enumerate(samples, start=1):  # Use a counter for unique field names
         html.append("<tr>")
         for record in structure:
+            # Increment field name for uniqueness
+            incremented_field_name = f"{record.field_name}{idx}"
             value = sample.get(record.field_name, "")
-            print(record.field_type, record.field_name, value, record.field_type == "hidden")
+
             if record.field_type == "hidden":
                 # Special case: Add hidden input and string representation for sample_id
                 html.append(
                     f"<td style='padding: 8px;'>"
-                    f"<input type='hidden' name='{record.field_name}' value='{value}'>"
+                    f"<input type='hidden' name='{incremented_field_name}' value='{value}'>"
                     f"{value}</td>"
                 )
             else:
@@ -85,7 +87,7 @@ def generate_html_table(structure: List[CsvRecord], samples: List[Dict[str, str]
                 display_attr = "style='display: none;'" if not record.field_type or record.field_type == "hidden" else ""
                 html.append(
                     f"<td style='padding: 8px;' {display_attr}>"
-                    f"<input class='form-control' name='{record.field_name}' type='{record.field_type}' "
+                    f"<input class='form-control' name='{incremented_field_name}' type='{record.field_type}' "
                     f"placeholder='{record.hint}' "
                     f"{f'min=\"{record.min_value}\"' if record.field_type == 'number' and record.min_value else ''} "
                     f"{f'max=\"{record.max_value}\"' if record.field_type == 'number' and record.max_value else ''} "
