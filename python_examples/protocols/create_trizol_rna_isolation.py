@@ -8,6 +8,11 @@ Related guides (referenced in the protocol description):
 - TRIzol Reagent and Phasemaker Tubes Complete System, Pub. No. MAN0016163
 - TRIzol Reagent (DNA isolation), Pub. No. MAN0016385
 
+Copyright notice: the protocol content below is adapted from Thermo Fisher Scientific user guides,
+which may be subject to Thermo Fisher Scientific copyright. The PDFs are not stored in this repo;
+the script downloads them from Thermo Fisher at run time. TRIzol, Invitrogen, Phasemaker, RNaseZap,
+and UltraPure are trademarks of Thermo Fisher Scientific and its subsidiaries. For demo purposes only.
+
 What the script does:
  1. POST /api/v1/protocols            - create the protocol ("item" is a JSON-encoded string)
  2. GET  /api/v1/protocols/{id}       - find the default "Description" and "Procedure" sections
@@ -85,7 +90,10 @@ def steps(name, step_list):
 DEMO_BANNER_HTML = """
 <p style="background-color: #fff3cd; border: 2px solid #d9534f; color: #a94442; padding: 10px; text-align: center; font-size: 16px;">
 <b>FOR DEMO PURPOSES ONLY</b><br>
-This protocol was created by a Labguru API example. Follow the official Thermo Fisher user guide for lab work.</p>
+This protocol was created by a Labguru API example. Follow the official Thermo Fisher user guide for lab work.<br>
+<small>The protocol text, tables, and attached user guides are adapted from Thermo Fisher Scientific
+documentation and may be subject to Thermo Fisher Scientific copyright. TRIzol, Invitrogen, Phasemaker,
+RNaseZap, and UltraPure are trademarks of Thermo Fisher Scientific and its subsidiaries.</small></p>
 """
 
 DESCRIPTION_HTML = DEMO_BANNER_HTML + """
