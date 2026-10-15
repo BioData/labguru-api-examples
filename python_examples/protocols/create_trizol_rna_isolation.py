@@ -41,6 +41,8 @@ TOKEN_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."
 PROTOCOL_NAME = "TRIzol Reagent total RNA isolation"
 
 HEADERS = {"Content-Type": "application/json"}
+TIMEOUT = 30  # seconds, for API calls
+UPLOAD_TIMEOUT = 120  # seconds, for PDF downloads and uploads
 
 
 def load_token():
@@ -261,15 +263,24 @@ YIELD_HTML = """
 </table>
 """
 
-# Reagents (Labguru "consumables", class Catalog::Material). Commercial items need a catalog number.
+# Reagents (Labguru "consumables", class Catalog::Material). The API requires either a free-text
+# produce_by or a vendor with a catalog number; a blank produce_by is rejected (422).
+# The manual lists generic reagents as "MLS" (any major laboratory supplier); here they get real
+# Thermo Fisher catalog numbers so no made-up vendor ends up in the inventory.
 REAGENTS = [
     {"name": "TRIzol Reagent", "produce_by": "Thermo Fisher", "catalog_number": "15596026",
      "description": "Store at 2-25°C. User guide: Pub. No. MAN0001271."},
-    {"name": "Chloroform", "produce_by": "MLS", "description": "Required for TRIzol phase separation"},
-    {"name": "Isopropanol", "produce_by": "MLS", "description": "RNA precipitation"},
-    {"name": "Ethanol, 75%", "produce_by": "MLS", "description": "RNA wash"},
-    {"name": "RNase-free water", "produce_by": "MLS", "description": "RNA solubilization (or 0.1 mM EDTA / 0.5% SDS)"},
-    {"name": "RNase-free glycogen", "produce_by": "MLS", "description": "Optional carrier for small samples"},
+    {"name": "Chloroform", "produce_by": "Thermo Fisher", "catalog_number": "C298-500",
+     "description": "Fisher Chemical chloroform, certified ACS. Used for TRIzol phase separation."},
+    {"name": "Isopropanol", "produce_by": "Thermo Fisher", "catalog_number": "A416-500",
+     "description": "Fisher Chemical 2-propanol, certified ACS. Used for RNA precipitation."},
+    {"name": "Ethanol, 75%", "produce_by": "Thermo Fisher", "catalog_number": "BP2818-500",
+     "description": "RNA wash. Prepare 75% in RNase-free water from Fisher BioReagents absolute "
+                    "ethanol, molecular biology grade."},
+    {"name": "RNase-free water", "produce_by": "Thermo Fisher", "catalog_number": "10977015",
+     "description": "UltraPure DNase/RNase-Free Distilled Water. RNA solubilization (or 0.1 mM EDTA / 0.5% SDS)."},
+    {"name": "RNase-free glycogen", "produce_by": "Thermo Fisher", "catalog_number": "R0551",
+     "description": "Glycogen, RNA grade. Optional carrier for small samples."},
     {"name": "RNaseZap RNase Decontamination Solution", "produce_by": "Thermo Fisher", "catalog_number": "AM9780",
      "description": "Removes RNase contamination from work surfaces and equipment"},
 ]
@@ -315,10 +326,10 @@ PROCEDURE_SECTIONS = [
 def api(method, path, token, payload=None):
     url = f"{SERVER_BASE}/api/v1/{path}"
     if method in ("GET", "DELETE"):
-        response = requests.request(method, url, params={"token": token})
+        response = requests.request(method, url, params={"token": token}, timeout=TIMEOUT)
     else:
         body = dict(payload or {}, token=token)
-        response = requests.request(method, url, headers=HEADERS, data=json.dumps(body))
+        response = requests.request(method, url, headers=HEADERS, data=json.dumps(body), timeout=TIMEOUT)
     if response.status_code not in (200, 201, 204):
         print(f"{method} {path} failed. Status: {response.status_code}")
         print("Response:", response.text[:1000])
@@ -397,17 +408,26 @@ def remove_empty_text_elements(token, section_id):
 
 
 def find_or_create(token, endpoint, item):
-    """Return an existing inventory item with the same name, or create it."""
-    page = 1
-    while True:
-        items = api("GET", f"{endpoint}?page={page}", token)
-        if not items:
-            break
-        for existing in items:
-            if existing.get("name", "").strip() == item["name"]:
-                print(f"  Using existing {endpoint} {existing['id']}: {item['name']}")
-                return existing
-        page += 1
+    """Return an existing inventory item with the same name, or create it.
+
+    The name is matched on the server (exact match) so the whole inventory is not paged through.
+    """
+    url = f"{SERVER_BASE}/api/v1/{endpoint}"
+    params = {
+        "token": token,
+        "kendo": "true",
+        "filter[logic]": "and",
+        "filter[filters][0][field]": "name",
+        "filter[filters][0][operator]": "eq",
+        "filter[filters][0][value]": item["name"],
+    }
+    response = requests.get(url, params=params, timeout=TIMEOUT)
+    response.raise_for_status()
+    matches = response.json()
+    if matches:
+        existing = matches[0]
+        print(f"  Using existing {endpoint} {existing['id']}: {item['name']}")
+        return existing
     created = api("POST", endpoint, token, {"item": item})
     print(f"  Created {endpoint} {created['id']}: {item['name']}")
     return created
@@ -452,7 +472,7 @@ def link_items(token, element_id, item_class, collection_name, items):
 
 
 def upload_manual(token, protocol_uuid, filename, url, description):
-    pdf = requests.get(url, timeout=60)
+    pdf = requests.get(url, timeout=UPLOAD_TIMEOUT)
     pdf.raise_for_status()
     response = requests.post(
         f"{SERVER_BASE}/api/v1/attachments",
@@ -463,6 +483,7 @@ def upload_manual(token, protocol_uuid, filename, url, description):
             "item[attach_to_uuid]": protocol_uuid,
         },
         files={"item[attachment]": (filename, pdf.content, "application/pdf")},
+        timeout=UPLOAD_TIMEOUT,
     )
     if response.status_code != 201:
         print(f"Upload of {filename} failed. Status: {response.status_code}")
