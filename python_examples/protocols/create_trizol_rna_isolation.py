@@ -189,7 +189,11 @@ def find_or_create(token, endpoint, item):
     }
     response = requests.get(url, params=params, timeout=TIMEOUT)
     response.raise_for_status()
-    matches = response.json()
+    results = response.json()
+    if not isinstance(results, list):
+        raise ApiError(f"GET {endpoint} returned an unexpected response: {str(results)[:200]}")
+    # Check the name too: if the server ignored the filter, it would return unrelated items
+    matches = [m for m in results if m.get("name") == item["name"]]
     if matches:
         existing = matches[0]
         print(f"  Using existing {endpoint} {existing['id']}: {item['name']}")

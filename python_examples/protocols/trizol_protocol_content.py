@@ -218,7 +218,8 @@ YIELD_HTML = """
 # Reagents (Labguru "consumables", class Catalog::Material). The API requires either a free-text
 # produce_by or a vendor with a catalog number; a blank produce_by is rejected (422).
 # The manual lists generic reagents as "MLS" (any major laboratory supplier); here they get real
-# Thermo Fisher catalog numbers so no made-up vendor ends up in the inventory.
+# Thermo Fisher catalog numbers so no made-up vendor ends up in the inventory. 75% ethanol is
+# made in the lab, so it is a non-commercial item with a free-text produce_by and no catalog number.
 REAGENTS = [
     {"name": "TRIzol Reagent", "produce_by": "Thermo Fisher", "catalog_number": "15596026",
      "description": "Store at 2-25°C. User guide: Pub. No. MAN0001271."},
@@ -226,9 +227,9 @@ REAGENTS = [
      "description": "Fisher Chemical chloroform, certified ACS. Used for TRIzol phase separation."},
     {"name": "Isopropanol", "produce_by": "Thermo Fisher", "catalog_number": "A416-500",
      "description": "Fisher Chemical 2-propanol, certified ACS. Used for RNA precipitation."},
-    {"name": "Ethanol, 75%", "produce_by": "Thermo Fisher", "catalog_number": "BP2818-500",
-     "description": "RNA wash. Prepare 75% in RNase-free water from Fisher BioReagents absolute "
-                    "ethanol, molecular biology grade."},
+    {"name": "Ethanol, 75%", "produce_by": "Prepared in lab",
+     "description": "RNA wash. Prepare 75% ethanol in RNase-free water from absolute ethanol, "
+                    "molecular biology grade (e.g. Fisher BioReagents BP2818-500)."},
     {"name": "RNase-free water", "produce_by": "Thermo Fisher", "catalog_number": "10977015",
      "description": "UltraPure DNase/RNase-Free Distilled Water. RNA solubilization (or 0.1 mM EDTA / 0.5% SDS)."},
     {"name": "RNase-free glycogen", "produce_by": "Thermo Fisher", "catalog_number": "R0551",
