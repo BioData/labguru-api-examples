@@ -79,7 +79,14 @@ def steps(name, step_list):
 # Protocol content (TRIzol Reagent User Guide, MAN0001271 Rev. D)
 # ---------------------------------------------------------------------------
 
-DESCRIPTION_HTML = """
+# Banner shown at the top of the protocol, so nobody mistakes the example for a validated lab protocol
+DEMO_BANNER_HTML = """
+<p style="background-color: #fff3cd; border: 2px solid #d9534f; color: #a94442; padding: 10px; text-align: center; font-size: 16px;">
+<b>FOR DEMO PURPOSES ONLY</b><br>
+This protocol was created by a Labguru API example. Follow the official Thermo Fisher user guide for lab work.</p>
+"""
+
+DESCRIPTION_HTML = DEMO_BANNER_HTML + """
 <p><b>WARNING!</b> Read the Safety Data Sheets (SDSs) and follow the handling instructions.
 Wear appropriate protective eyewear, clothing, and gloves.</p>
 
